@@ -10,7 +10,8 @@ const {
     Image,
     ActivityIndicator,
     NetInfo,
-    Platform
+    Platform,
+    Animated
 } = ReactNative;
 
 
@@ -71,7 +72,8 @@ const CachedImage = React.createClass({
         return {
             isCacheable: false,
             cachedImagePath: null,
-            networkAvailable: true
+            networkAvailable: true,
+            scale: new Animated.Value(0)
         };
     },
 
@@ -103,6 +105,7 @@ const CachedImage = React.createClass({
 
     componentWillReceiveProps(nextProps) {
         if (!_.isEqual(this.props.source, nextProps.source)) {
+            this.safeSetState({cachedImagePath:null, scale: new Animated.Value(0)});
             this.processSource(nextProps.source);
         }
     },
@@ -142,20 +145,63 @@ const CachedImage = React.createClass({
         }
     },
 
+    animateImage(){
+      return {
+        transform:[
+          { scale:
+            this.state.scale.interpolate({
+              inputRange: [0,.5,1],
+              outputRange: [.01,1.3,1]
+            })
+          },
+        ]
+      }
+    },
+
+    componentDidUpdate(prevProps, prevState){
+      if (this.props.animated) {
+        if (!prevState.cachedImagePath && this.state.cachedImagePath) {
+          this.animatedIn()
+        }
+      }
+    },
+
+    animatedIn(){
+      Animated.spring(
+        this.state.scale,{
+            toValue:1,
+            friction:2
+        }).start()
+    },
+
     render() {
         if (this.state.isCacheable && !this.state.cachedImagePath) {
             return this.renderLoader();
+        } else {
+          const props = getImageProps(this.props);
+          const style = this.props.style || styles.image;
+          const source = (this.state.isCacheable && this.state.cachedImagePath) ? {
+            uri: 'file://' + this.state.cachedImagePath
+          } : this.props.source;
+          if (this.props.animated) {
+            return(
+              <Animated.Image
+                { ...props}
+                style={[ style, this.animateImage() ]}
+                source={ source }
+              />
+            )
+          } else {
+            return(
+              <Image
+                { ...props}
+                style={ style }
+                source={ source }
+              />
+            )
+          }
+
         }
-        const props = getImageProps(this.props);
-        const style = this.props.style || styles.image;
-        const source = (this.state.isCacheable && this.state.cachedImagePath) ? {
-                uri: 'file://' + this.state.cachedImagePath
-            } : this.props.source;
-        return this.props.renderImage({
-            ...props,
-            style,
-            source
-        });
     },
 
     renderLoader() {
