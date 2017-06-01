@@ -162,6 +162,8 @@ const CachedImage = React.createClass({
       if (this.props.animated) {
         if (!prevState.cachedImagePath && this.state.cachedImagePath) {
           this.animatedIn()
+        } else if (!prevProps.animated && this.state.cachedImagePath) {
+          this.animatedIn()
         }
       }
     },
@@ -218,8 +220,8 @@ const CachedImage = React.createClass({
         if (Platform.OS === 'android' && flattenStyle(imageStyle).borderRadius) {
             return (
                 <ActivityIndicator
-                    {...activityIndicatorProps}
-                    style={[imageStyle, activityIndicatorStyle]}/>
+                  {...activityIndicatorProps}
+                  style={[imageStyle, activityIndicatorStyle]}/>
             );
         }
         // otherwise render an image with the defaultSource with the ActivityIndicator on top of it
@@ -229,8 +231,8 @@ const CachedImage = React.createClass({
             source,
             children: (
                 <ActivityIndicator
-                    {...activityIndicatorProps}
-                    style={activityIndicatorStyle}/>
+                  {...activityIndicatorProps}
+                  style={activityIndicatorStyle}/>
             )
         });
     }
