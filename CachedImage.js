@@ -217,7 +217,7 @@ const CachedImage = React.createClass({
 
         // if the imageStyle has borderRadius it will break the loading image view on android
         // so we only show the ActivityIndicator
-        if (Platform.OS === 'android' && flattenStyle(imageStyle).borderRadius) {
+        if (!source || Platform.OS === 'android' && flattenStyle(imageStyle).borderRadius) {
             return (
                 <ActivityIndicator
                   {...activityIndicatorProps}
